@@ -52,12 +52,28 @@ def get_stations(link):
         #print(table)
         theaders = table.find_all('th')
         headers = [col.contents[0] for col in theaders]
-        print(headers)
+        #print(headers)
         
         body_rows = table.find_all('tr')
         slicer = slice(1, len(body_rows), 1)
         rows = body_rows[slicer]
-        print(rows)
+        #print(rows)
+
+        stations = []
+
+        for row in rows:
+            cells = row.find_all('td')
+            #print(cells)
+            values = []
+            for col in cells:
+                if len(col.contents) == 1:
+                    values.append(col.contents[0])
+                else:
+                    values.append(None)
+            print(values)
+            stations.append(dict(zip(headers, values)))
+
+        print(stations)
 
     except Exception as e:
         print(str(e))
