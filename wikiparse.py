@@ -7,11 +7,15 @@ baseurl = "https://en.wikipedia.org/api/rest_v1/"
 
 def get(url):
     print('getting :', url)
+    retval = {}
     req = http.request('GET', url, headers={
         'Api-User-Agent': 'tobyworth@hotmail.com'
     })
 
-    return req.data
+    if req.status == 200:
+        retval = req.data
+
+    return retval
 
 def main():
     print('running main')
