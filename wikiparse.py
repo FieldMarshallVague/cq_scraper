@@ -1,6 +1,7 @@
 import certifi
 import urllib3
 from bs4 import BeautifulSoup
+from radiostation import RadioStationColumns, RadioStation
 
 http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
 baseurl = "https://en.wikipedia.org/api/rest_v1/"
@@ -8,6 +9,7 @@ baseurl = "https://en.wikipedia.org/api/rest_v1/"
 def get(url):
     print('getting :', url)
     retval = {}
+
     req = http.request('GET', url, headers={
         'Api-User-Agent': 'tobyworth@hotmail.com'
     })
@@ -32,26 +34,26 @@ def main():
             abslink = link.get('href')
             print(abslink)
             get_stations(abslink)
-            break
+            # break
 
     except Exception as e:
         print(str(e))
 
+def sanitize(dirtyObj):
+    return (str(dirtyObj)).strip().replace(' ','_').lower()
 
 def get_stations(link):
     source_link = baseurl + 'page/html/' + link[2:]
     #print(source_link)
 
     try:
-        # retrieve page and parse html table into list of objects
         source = get(source_link)
-        #print(source)
         soup = BeautifulSoup(source, 'html.parser')
-        #print(soup.prettify())
         table = soup.find('table', class_="wikitable")
-        #print(table)
         theaders = table.find_all('th')
-        headers = [col.contents[0] for col in theaders]
+        
+        #headers = [(str(col.contents[0])).strip().replace(' ','_').lower() for col in theaders]
+        headers = [sanitize(col.contents[0]) for col in theaders]
         #print(headers)
         
         body_rows = table.find_all('tr')
@@ -67,14 +69,24 @@ def get_stations(link):
             values = []
             for col in cells:
                 if len(col.contents) == 1:
-                    values.append(col.contents[0])
+                    values.append(str(col.contents[0]))
                 else:
                     values.append(None)
-            print(values)
+            #print(values)
             stations.append(dict(zip(headers, values)))
+            break
 
-        print(stations)
+        map_radio_station(stations)
 
+    except Exception as e:
+        print(str(e))
+
+def map_radio_station(stations):
+    try:    
+        for station in stations:
+                radio = RadioStationColumns(station)
+                print(radio)
+                break
     except Exception as e:
         print(str(e))
 
